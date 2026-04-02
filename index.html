@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TicketPass — Premium Concert Tickets</title>
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0a0e27;
+      --bg-light:    #0f1535;
+      --surface:     #1a1f3a;
+      --surface-2:   #252d4a;
+      --surface-3:   #2f3a5a;
+      --border:      #3d4a6f;
+      --accent:      #00d4ff;
+      --accent-dark: #0099cc;
+      --accent-glow: rgba(0, 212, 255, 0.25);
+      --success:     #22c55e;
+      --success-glow: rgba(34, 197, 94, 0.25);
+      --warning:     #f59e0b;
+      --danger:      #ef4444;
+      --danger-bg:   rgba(239, 68, 68, 0.12);
+      --text:        #e2e8f0;
+      --text-muted:  #94a3b8;
+      --radius:      12px;
+      --shadow:      0 12px 48px rgba(0,0,0,0.65);
+      --shadow-sm:   0 4px 12px rgba(0,0,0,0.35);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 0;
+      background-image:
+        radial-gradient(ellipse 100% 60% at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 70%);
+    }
+
+    /* ── Header ─────────────────────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #1a1f3a 0%, #252d4a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header-brand-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), #0099cc);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .header-brand span { color: var(--accent); }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 0.85rem;
+    }
+    .user-badge {
+      background: rgba(0,212,255,0.1);
+      border: 1px solid rgba(0,212,255,0.3);
+      padding: 6px 12px;
+      border-radius: 999px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Main Container ─────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px;
+      overflow-y: auto;
+    }
+
+    /* ── Utility ────────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    /* ── Card ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .card-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── Form ───────────────────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    select {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input::placeholder { color: var(--text-muted); }
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: all 0.18s;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0099cc);
+      color: #000;
+      width: 100%;
+      box-shadow: 0 4px 18px var(--accent-glow);
+      font-weight: 800;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 28px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+    .btn-secondary:hover {
+      background: var(--surface-3);
+      border-color: var(--accent);
+    }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      width: auto;
+    }
+
+    /* ── Alert ──────────────────────────────────────────────────── */
+    .alert {
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert-danger {
+      background: var(--danger-bg);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+    }
+    .alert-success {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: #86efac;
+    }
+
+    /* ── Divider ────────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Login Screen ───────────────────────────────────────────── */
+    .login-badge {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+    }
+    .login-badge-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .login-badge-text { color: var(--text-muted); }
+    .login-badge-text strong { color: var(--accent); display: block; margin-bottom: 2px; font-size: 0.9rem; }
+
+    /* ── Browse Screen ──────────────────────────────────────────── */
+    #screen-browse {
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .browse-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .browse-header h2 { font-size: 1.5rem; font-weight: 800; }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+    .filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .event-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .event-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+
+    .event-image {
+      width: 100%;
+      height: 160px;
+      background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .event-content {
+      padding: 16px;
+    }
+    .event-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .event-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .event-venue {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .event-pricing {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .price-original {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+    .price-discounted {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--success);
+    }
+    .discount-badge {
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.3);
+      color: var(--warning);
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .discount-compare {
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: var(--success);
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .event-btn {
+      background: linear-gradient(135deg, var(--accent), #0099cc);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      box-shadow: 0 3px 12px var(--accent-glow);
+    }
+    .event-btn:hover {
+      box-shadow: 0 5px 18px var(--accent-glow);
+      transform: scale(1.02);
+    }
+
+    /* ── Checkout Screens ───────────────────────────────────────── */
+    .checkout-container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+    }
+
+    .checkout-main { }
+    .checkout-summary {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 120px;
+    }
+
+    .summary-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-row.total {
+      border: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid var(--border);
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--success);
+    }
+
+    .summary-label { color: var(--text-muted); }
+    .summary-value { font-weight: 700; color: var(--text); }
+    .summary-value.discount { color: var(--success); }
+
+    /* ── Step Indicator ─────────────────────────────────────────── */
+    .step-indicator {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      justify-content: center;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .step-dot.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .step-dot.completed {
+      background: var(--success);
+      border-color: var(--success);
+      color: #000;
+    }
+    .step-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .step-label.active { color: var(--accent); }
+
+    .step-connector {
+      width: 20px;
+      height: 2px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+    .step-connector.active { background: var(--accent); }
+
+    /* ── Seat Selection ─────────────────────────────────────────── */
+    .seat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 8px;
+      margin-bottom: 24px;
+      max-width: 400px;
+    }
+    .seat {
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .seat:hover {
+      border-color: var(--accent);
+      background: var(--surface-3);
+    }
+    .seat.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .seat.unavailable {
+      background: var(--surface-3);
+      border-color: var(--border);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .seat-legend {
+      display: flex;
+      gap: 16px;
+      font-size: 0.8rem;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .legend-box.available { background: var(--surface-2); }
+    .legend-box.selected { background: var(--accent); }
+    .legend-box.unavailable { background: var(--surface-3); opacity: 0.5; }
+
+    /* ── Button Group ───────────────────────────────────────────── */
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .button-group .btn {
+      flex: 1;
+    }
+
+    /* ── Modal Overlay ──────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.hidden { display: none !important; }
+
+    .modal-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: var(--shadow);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .modal-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .subscription-badge {
+      background: rgba(34,197,94,0.1);
+      border: 2px solid rgba(34,197,94,0.3);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .subscription-badge-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--success);
+      margin-bottom: 6px;
+    }
+    .subscription-badge-price {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .subscription-badge-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .subscription-benefits {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+    }
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      color: var(--text-muted);
+    }
+    .benefit-item::before {
+      content: "✓";
+      color: var(--success);
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .checkout-container {
+        grid-template-columns: 1fr;
+      }
+      .checkout-summary {
+        position: static;
+      }
+      .events-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+      .card {
+        padding: 28px 20px;
+      }
+      .header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .header-user {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    /* ── Confirmation Screen ────────────────────────────────────── */
+    .confirmation-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(34,197,94,0.12);
+      border: 2px solid rgba(34,197,94,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 24px;
+      box-shadow: 0 0 30px var(--success-glow);
+    }
+
+    .confirmation-details {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .conf-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .conf-row:last-child { border-bottom: none; }
+    .conf-label { color: var(--text-muted); }
+    .conf-value { font-weight: 700; color: var(--text); }
+    .conf-value.highlight { color: var(--success); }
+
+    .order-number {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 24px;
+      font-family: 'Courier New', monospace;
+    }
+    .order-number-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .order-number-value {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- HEADER                                                       -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="header hidden" id="header">
+    <div class="header-brand">
+      <div class="header-brand-icon">🎟</div>
+      <div>Ticket<span>Pass</span></div>
+    </div>
+    <div class="header-user">
+      <span class="user-badge" id="user-display"></span>
+      <button class="btn-logout" onclick="handleLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT                                                 -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="main">
+
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <!-- SCREEN 1: LOGIN                                             -->
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <div id="screen-login" class="card">
+      <div class="card-title">Welcome to TicketPass</div>
+      <div class="card-subtitle">Premium concert tickets at unbeatable prices.</div>
+
+      <div class="login-badge">
+        <div class="login-badge-icon">⚡</div>
+        <div class="login-badge-text">
+          <strong>Subscriber Exclusive</strong>
+          Get <strong style="color: var(--success);">50% OFF</strong> all concert tickets. Create an account to start saving.
+        </div>
+      </div>
+
+      <div id="login-alert" class="alert alert-danger hidden">
+        <span>⚠</span> <span id="login-alert-msg"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="login-email">Email Address</label>
+        <input type="email" id="login-email" placeholder="your@email.com" autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="off" />
+      </div>
+
+      <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
+
+      <hr class="divider" />
+      <p style="font-size:0.8rem; color:var(--text-muted); text-align:center;">
+        Don't have an account? Use any email and password to create one instantly.
+      </p>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <!-- SCREEN 2: BROWSE EVENTS                                     -->
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <div id="screen-browse" class="hidden">
+      <div class="browse-header">
+        <h2>🎵 Live Events</h2>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterEvents('all')">All Events</button>
+        <button class="filter-btn" onclick="filterEvents('rock')">Rock</button>
+        <button class="filter-btn" onclick="filterEvents('pop')">Pop</button>
+        <button class="filter-btn" onclick="filterEvents('hiphop')">Hip-Hop</button>
+        <button class="filter-btn" onclick="filterEvents('jazz')">Jazz</button>
+      </div>
+
+      <div class="events-grid" id="events-grid"></div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <!-- SCREEN 3: CHECKOUT - SEATS                                  -->
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <div id="screen-checkout-seats" class="hidden">
+      <div class="step-indicator">
+        <div class="step">
+          <div class="step-dot active">1</div>
+          <div class="step-label active">Seats</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-label">Contact</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-label">Review</div>
+        </div>
+      </div>
+
+      <div class="checkout-container">
+        <div class="checkout-main">
+          <div class="card">
+            <div class="card-title" id="checkout-event-name"></div>
+            <div class="card-subtitle" id="checkout-event-date"></div>
+
+            <div style="margin-bottom: 24px;">
+              <label style="margin-bottom: 12px;">Select Your Seats</label>
+              <div class="seat-legend">
+                <div class="legend-item">
+                  <div class="legend-box available"></div>
+                  <span>Available</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-box selected"></div>
+                  <span>Selected</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-box unavailable"></div>
+                  <span>Sold</span>
+                </div>
+              </div>
+              <div class="seat-grid" id="seat-grid"></div>
+            </div>
+
+            <div id="seats-alert" class="alert alert-danger hidden">
+              <span>⚠</span> <span id="seats-alert-msg"></span>
+            </div>
+
+            <div class="button-group">
+              <button class="btn btn-secondary" onclick="backToBrowse()">← Back</button>
+              <button class="btn btn-primary" onclick="proceedToContact()">Continue →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-summary">
+          <div class="summary-title">Order Summary</div>
+          <div class="summary-row">
+            <span class="summary-label">Event</span>
+            <span class="summary-value" id="summary-event"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Seats</span>
+            <span class="summary-value" id="summary-seats">None</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Unit Price</span>
+            <span class="summary-value" id="summary-unit"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value" id="summary-subtotal"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Discount</span>
+            <span class="summary-value discount" id="summary-discount"></span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="summary-total"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <!-- SCREEN 4: CHECKOUT - CONTACT                                -->
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <div id="screen-checkout-contact" class="hidden">
+      <div class="step-indicator">
+        <div class="step">
+          <div class="step-dot completed">✓</div>
+          <div class="step-label">Seats</div>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step">
+          <div class="step-dot active">2</div>
+          <div class="step-label active">Contact</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-label">Review</div>
+        </div>
+      </div>
+
+      <div class="checkout-container">
+        <div class="checkout-main">
+          <div class="card">
+            <div class="card-title">Billing Information</div>
+            <div class="card-subtitle">Enter your details to complete the booking.</div>
+
+            <div id="contact-alert" class="alert alert-danger hidden">
+              <span>⚠</span> <span id="contact-alert-msg"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="contact-name">Full Name</label>
+              <input type="text" id="contact-name" placeholder="John Doe" />
+            </div>
+
+            <div class="form-group">
+              <label for="contact-email">Email Address</label>
+              <input type="email" id="contact-email" placeholder="john@example.com" />
+            </div>
+
+            <div class="form-group">
+              <label for="contact-phone">Phone Number</label>
+              <input type="tel" id="contact-phone" placeholder="+1 (555) 123-4567" />
+            </div>
+
+            <div class="form-group">
+              <label for="contact-address">Street Address</label>
+              <input type="text" id="contact-address" placeholder="123 Main St" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="contact-city">City</label>
+                <input type="text" id="contact-city" placeholder="New York" />
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="contact-zip">ZIP Code</label>
+                <input type="text" id="contact-zip" placeholder="10001" />
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button class="btn btn-secondary" onclick="backToSeats()">← Back</button>
+              <button class="btn btn-primary" onclick="proceedToReview()">Continue →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-summary">
+          <div class="summary-title">Order Summary</div>
+          <div class="summary-row">
+            <span class="summary-label">Event</span>
+            <span class="summary-value" id="summary-event-2"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Seats</span>
+            <span class="summary-value" id="summary-seats-2"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value" id="summary-subtotal-2"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Discount</span>
+            <span class="summary-value discount" id="summary-discount-2"></span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="summary-total-2"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <!-- SCREEN 5: CHECKOUT - REVIEW                                 -->
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <div id="screen-checkout-review" class="hidden">
+      <div class="step-indicator">
+        <div class="step">
+          <div class="step-dot completed">✓</div>
+          <div class="step-label">Seats</div>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step">
+          <div class="step-dot completed">✓</div>
+          <div class="step-label">Contact</div>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step">
+          <div class="step-dot active">3</div>
+          <div class="step-label active">Review</div>
+        </div>
+      </div>
+
+      <div class="checkout-container">
+        <div class="checkout-main">
+          <div class="card">
+            <div class="card-title">Review Your Order</div>
+            <div class="card-subtitle">Please verify all details before completing your purchase.</div>
+
+            <div style="margin-bottom: 24px;">
+              <label style="margin-bottom: 12px; display: block;">Event Details</label>
+              <div class="confirmation-details">
+                <div class="conf-row">
+                  <span class="conf-label">Event</span>
+                  <span class="conf-value" id="review-event"></span>
+                </div>
+                <div class="conf-row">
+                  <span class="conf-label">Date & Time</span>
+                  <span class="conf-value" id="review-date"></span>
+                </div>
+                <div class="conf-row">
+                  <span class="conf-label">Venue</span>
+                  <span class="conf-value" id="review-venue"></span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+              <label style="margin-bottom: 12px; display: block;">Seats</label>
+              <div class="confirmation-details">
+                <div class="conf-row">
+                  <span class="conf-label">Selected Seats</span>
+                  <span class="conf-value" id="review-seats"></span>
+                </div>
+                <div class="conf-row">
+                  <span class="conf-label">Quantity</span>
+                  <span class="conf-value" id="review-qty"></span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+              <label style="margin-bottom: 12px; display: block;">Billing Information</label>
+              <div class="confirmation-details">
+                <div class="conf-row">
+                  <span class="conf-label">Name</span>
+                  <span class="conf-value" id="review-name"></span>
+                </div>
+                <div class="conf-row">
+                  <span class="conf-label">Email</span>
+                  <span class="conf-value" id="review-email"></span>
+                </div>
+                <div class="conf-row">
+                  <span class="conf-label">Phone</span>
+                  <span class="conf-value" id="review-phone"></span>
+                </div>
+                <div class="conf-row">
+                  <span class="conf-label">Address</span>
+                  <span class="conf-value" id="review-address"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button class="btn btn-secondary" onclick="backToContact()">← Back</button>
+              <button class="btn btn-primary" onclick="showSubscriptionModal()">Complete Purchase</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-summary">
+          <div class="summary-title">Final Total</div>
+          <div class="summary-row">
+            <span class="summary-label">Event</span>
+            <span class="summary-value" id="summary-event-3"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Seats</span>
+            <span class="summary-value" id="summary-seats-3"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Unit Price</span>
+            <span class="summary-value" id="summary-unit-3"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value" id="summary-subtotal-3"></span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Discount</span>
+            <span class="summary-value discount" id="summary-discount-3"></span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="summary-total-3"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <!-- SCREEN 6: CONFIRMATION                                      -->
+    <!-- ──────────────────────────────────────────────────────────── -->
+    <div id="screen-confirmation" class="hidden">
+      <div class="card" style="text-align: center; max-width: 520px;">
+        <div class="confirmation-icon">✓</div>
+        <div class="card-title">Order Confirmed!</div>
+        <div class="card-subtitle">Your tickets have been reserved. Check your email for details.</div>
+
+        <div class="order-number">
+          <div class="order-number-label">Order Number</div>
+          <div class="order-number-value" id="conf-order-number"></div>
+        </div>
+
+        <div class="confirmation-details">
+          <div class="conf-row">
+            <span class="conf-label">Event</span>
+            <span class="conf-value" id="conf-event"></span>
+          </div>
+          <div class="conf-row">
+            <span class="conf-label">Seats</span>
+            <span class="conf-value" id="conf-seats"></span>
+          </div>
+          <div class="conf-row">
+            <span class="conf-label">Subtotal</span>
+            <span class="conf-value" id="conf-subtotal"></span>
+          </div>
+          <div class="conf-row">
+            <span class="conf-label">Discount</span>
+            <span class="conf-value highlight" id="conf-discount"></span>
+          </div>
+          <div class="conf-row">
+            <span class="conf-label">Total Paid</span>
+            <span class="conf-value highlight" id="conf-total"></span>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" onclick="backToBrowse()">Browse More Events</button>
+          <button class="btn btn-secondary" onclick="handleLogout()">Logout</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SUBSCRIPTION MODAL                                           -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay hidden" id="subscription-modal">
+    <div class="modal-content">
+      <div class="modal-title">Unlock Premium Savings</div>
+      <div class="modal-subtitle">Subscribe to TicketPass Premium for exclusive discounts</div>
+
+      <div class="subscription-badge">
+        <div class="subscription-badge-title">Annual Subscription</div>
+        <div class="subscription-badge-price">$120</div>
+        <div class="subscription-badge-text">One-time payment for 12 months of savings</div>
+      </div>
+
+      <div class="subscription-benefits">
+        <div class="benefit-item">Up to 70% off concert tickets</div>
+        <div class="benefit-item">Priority seat selection</div>
+        <div class="benefit-item">Early access to new events</div>
+        <div class="benefit-item">Exclusive member-only deals</div>
+        <div class="benefit-item">Free cancellation anytime</div>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn btn-primary" onclick="completeOrderWithSubscription()">Subscribe & Complete Purchase</button>
+        <button class="btn btn-secondary" onclick="completeOrderWithoutSubscription()">Skip for Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- JavaScript                                                   -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <script>
+    /* ── Data ──────────────────────────────────────────────────── */
+    const EVENTS = [
+      {
+        id: 1,
+        name: "The Midnight Echo",
+        artist: "Luna & The Wolves",
+        date: "Apr 15, 2026",
+        time: "8:00 PM",
+        venue: "Madison Square Garden, NYC",
+        category: "rock",
+        icon: "🎸",
+        price: 150,
+        discount: 0.5,
+        image: "🎸"
+      },
+      {
+        id: 2,
+        name: "Neon Dreams Tour",
+        artist: "Synthwave Collective",
+        date: "Apr 22, 2026",
+        time: "7:30 PM",
+        venue: "Staples Center, LA",
+        category: "pop",
+        icon: "🎹",
+        price: 120,
+        discount: 0.5,
+        image: "🎹"
+      },
+      {
+        id: 3,
+        name: "Urban Beats Festival",
+        artist: "Various Artists",
+        date: "May 5, 2026",
+        time: "6:00 PM",
+        venue: "United Center, Chicago",
+        category: "hiphop",
+        icon: "🎤",
+        price: 95,
+        discount: 0.5,
+        image: "🎤"
+      },
+      {
+        id: 4,
+        name: "Jazz Nights 2026",
+        artist: "The Blue Notes",
+        date: "May 12, 2026",
+        time: "9:00 PM",
+        venue: "Kennedy Center, DC",
+        category: "jazz",
+        icon: "🎺",
+        price: 110,
+        discount: 0.5,
+        image: "🎺"
+      },
+      {
+        id: 5,
+        name: "Rock Legends",
+        artist: "Classic Rock Revival",
+        date: "May 20, 2026",
+        time: "8:00 PM",
+        venue: "American Airlines Center, Dallas",
+        category: "rock",
+        icon: "🎸",
+        price: 140,
+        discount: 0.5,
+        image: "🎸"
+      },
+      {
+        id: 6,
+        name: "Pop Explosion",
+        artist: "Top Chart Stars",
+        date: "Jun 2, 2026",
+        time: "7:00 PM",
+        venue: "Crypto.com Arena, LA",
+        category: "pop",
+        icon: "🎤",
+        price: 130,
+        discount: 0.5,
+        image: "🎤"
+      }
+    ];
+
+    const SEATS = [
+      'A1', 'A2', 'A3', 'A4', 'A5', 'A6',
+      'B1', 'B2', 'B3', 'B4', 'B5', 'B6',
+      'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
+      'D1', 'D2', 'D3', 'D4', 'D5', 'D6'
+    ];
+    const UNAVAILABLE_SEATS = ['A1', 'A5', 'B2', 'B4', 'C1', 'C6', 'D3'];
+
+    /* ── State ─────────────────────────────────────────────────── */
+    let currentUser = null;
+    let currentEvent = null;
+    let selectedSeats = [];
+    let contactInfo = {};
+    let hasSubscription = true; // Default to true (discount applied)
+
+    /* ── LocalStorage helpers ──────────────────────────────────── */
+    function getUser()      { return localStorage.getItem("tp_user"); }
+    function setUser(u)     { localStorage.setItem("tp_user", u); }
+    function clearStorage() { localStorage.removeItem("tp_user"); }
+
+    /* ── Screen navigation ─────────────────────────────────────── */
+    function showScreen(id) {
+      [
+        "screen-login",
+        "screen-browse",
+        "screen-checkout-seats",
+        "screen-checkout-contact",
+        "screen-checkout-review",
+        "screen-confirmation"
+      ].forEach(s => {
+        document.getElementById(s).classList.add("hidden");
+      });
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    function showHeader(show = true) {
+      document.getElementById("header").classList.toggle("hidden", !show);
+    }
+
+    /* ── Login ─────────────────────────────────────────────────── */
+    function handleLogin() {
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value.trim();
+
+      if (!email || !password) {
+        document.getElementById("login-alert-msg").textContent = "Please enter both email and password.";
+        document.getElementById("login-alert").classList.remove("hidden");
+        return;
+      }
+
+      if (!email.includes("@")) {
+        document.getElementById("login-alert-msg").textContent = "Please enter a valid email address.";
+        document.getElementById("login-alert").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("login-alert").classList.add("hidden");
+      currentUser = email;
+      setUser(email);
+      document.getElementById("user-display").textContent = "👤 " + email;
+      showHeader(true);
+      renderEvents();
+      showScreen("screen-browse");
+    }
+
+    /* ── Logout ────────────────────────────────────────────────── */
+    function handleLogout() {
+      clearStorage();
+      currentUser = null;
+      selectedSeats = [];
+      contactInfo = {};
+      showHeader(false);
+      document.getElementById("login-email").value = "";
+      document.getElementById("login-password").value = "";
+      showScreen("screen-login");
+    }
+
+    /* ── Event Filtering ───────────────────────────────────────── */
+    function filterEvents(category) {
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.classList.remove("active");
+      });
+      event.target.classList.add("active");
+      renderEvents(category);
+    }
+
+    /* ── Render Events ─────────────────────────────────────────── */
+    function renderEvents(category = "all") {
+      const grid = document.getElementById("events-grid");
+      grid.innerHTML = "";
+
+      const filtered = category === "all"
+        ? EVENTS
+        : EVENTS.filter(e => e.category === category);
+
+      filtered.forEach(evt => {
+        const ticketmasterPrice = evt.price * 1.3; // Ticketmaster comparable price (30% higher)
+        const discountedPrice = evt.price * 0.5; // 50% discount
+        const savingsPercent = Math.round(((ticketmasterPrice - discountedPrice) / ticketmasterPrice) * 100);
+
+        const card = document.createElement("div");
+        card.className = "event-card";
+        card.onclick = () => startCheckout(evt);
+        card.innerHTML = `
+          <div class="event-image">${evt.image}</div>
+          <div class="event-content">
+            <div class="event-date">${evt.date}</div>
+            <div class="event-name">${evt.name}</div>
+            <div class="event-venue">${evt.venue}</div>
+            <div class="event-pricing">
+              <span class="price-original">$${ticketmasterPrice.toFixed(2)}</span>
+              <span class="price-discounted">$${discountedPrice.toFixed(2)}</span>
+              <span class="discount-badge">${savingsPercent}% OFF COMPARE TO TICKETMASTER</span>
+              <span class="discount-compare"></span>
+            </div>
+            <button class="event-btn">Select Seats</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* ── Checkout: Seats ───────────────────────────────────────── */
+    function startCheckout(evt) {
+      currentEvent = evt;
+      selectedSeats = [];
+      contactInfo = {};
+      renderSeats();
+      updateSummary();
+      showScreen("screen-checkout-seats");
+    }
+
+    function renderSeats() {
+      const grid = document.getElementById("seat-grid");
+      grid.innerHTML = "";
+
+      SEATS.forEach(seat => {
+        const isUnavailable = UNAVAILABLE_SEATS.includes(seat);
+        const isSelected = selectedSeats.includes(seat);
+
+        const seatEl = document.createElement("div");
+        seatEl.className = "seat";
+        if (isUnavailable) seatEl.classList.add("unavailable");
+        if (isSelected) seatEl.classList.add("selected");
+        seatEl.textContent = seat;
+        seatEl.onclick = () => {
+          if (!isUnavailable) {
+            if (isSelected) {
+              selectedSeats = selectedSeats.filter(s => s !== seat);
+            } else {
+                            if (selectedSeats.length < 2) {
+                                selectedSeats.push(seat);
+                              } else {
+                                document.getElementById("seats-alert-msg").textContent = "Maximum 2 seats per order.";
+                document.getElementById("seats-alert").classList.remove("hidden");
+                return;
+              }
+            }
+            document.getElementById("seats-alert").classList.add("hidden");
+            renderSeats();
+            updateSummary();
+          }
+        };
+        grid.appendChild(seatEl);
+      });
+
+      document.getElementById("checkout-event-name").textContent = currentEvent.name;
+      document.getElementById("checkout-event-date").textContent = currentEvent.date + " at " + currentEvent.time;
+    }
+
+    function updateSummary() {
+      const discountedPrice = currentEvent.price * (1 - currentEvent.discount);
+      const subtotal = discountedPrice * selectedSeats.length;
+      const discount = currentEvent.price * currentEvent.discount * selectedSeats.length;
+      const total = subtotal;
+      const discountPercent = Math.round(currentEvent.discount * 100);
+
+      const summaryIds = [
+        ["summary-event", "summary-seats", "summary-unit", "summary-subtotal", "summary-discount", "summary-total"],
+        ["summary-event-2", "summary-seats-2", null, "summary-subtotal-2", "summary-discount-2", "summary-total-2"],
+        ["summary-event-3", "summary-seats-3", "summary-unit-3", "summary-subtotal-3", "summary-discount-3", "summary-total-3"]
+      ];
+
+      summaryIds.forEach(ids => {
+        if (ids[0]) document.getElementById(ids[0]).textContent = currentEvent.name;
+        if (ids[1]) document.getElementById(ids[1]).textContent = selectedSeats.length > 0 ? selectedSeats.join(", ") : "None";
+        if (ids[2]) document.getElementById(ids[2]).textContent = "$" + currentEvent.price;
+        if (ids[3]) document.getElementById(ids[3]).textContent = "$" + subtotal.toFixed(2);
+        if (ids[4]) document.getElementById(ids[4]).textContent = `-$${discount.toFixed(2)} (${discountPercent}% OFF)`;
+        if (ids[5]) document.getElementById(ids[5]).textContent = "$" + total.toFixed(2);
+      });
+    }
+
+    function proceedToContact() {
+      if (selectedSeats.length === 0) {
+        document.getElementById("seats-alert-msg").textContent = "Please select at least one seat.";
+        document.getElementById("seats-alert").classList.remove("hidden");
+        return;
+      }
+      updateSummary();
+      showScreen("screen-checkout-contact");
+    }
+
+    function backToSeats() {
+      showScreen("screen-checkout-seats");
+    }
+
+    /* ── Checkout: Contact ─────────────────────────────────────── */
+    function proceedToReview() {
+      const name = document.getElementById("contact-name").value.trim();
+      const email = document.getElementById("contact-email").value.trim();
+      const phone = document.getElementById("contact-phone").value.trim();
+      const address = document.getElementById("contact-address").value.trim();
+      const city = document.getElementById("contact-city").value.trim();
+      const zip = document.getElementById("contact-zip").value.trim();
+
+      if (!name || !email || !phone || !address || !city || !zip) {
+        document.getElementById("contact-alert-msg").textContent = "Please fill in all fields.";
+        document.getElementById("contact-alert").classList.remove("hidden");
+        return;
+      }
+
+      if (!email.includes("@")) {
+        document.getElementById("contact-alert-msg").textContent = "Please enter a valid email address.";
+        document.getElementById("contact-alert").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("contact-alert").classList.add("hidden");
+
+      contactInfo = { name, email, phone, address, city, zip };
+
+      // Populate review screen
+      document.getElementById("review-event").textContent = currentEvent.name;
+      document.getElementById("review-date").textContent = currentEvent.date + " at " + currentEvent.time;
+      document.getElementById("review-venue").textContent = currentEvent.venue;
+      document.getElementById("review-seats").textContent = selectedSeats.join(", ");
+      document.getElementById("review-qty").textContent = selectedSeats.length;
+      document.getElementById("review-name").textContent = name;
+      document.getElementById("review-email").textContent = email;
+      document.getElementById("review-phone").textContent = phone;
+      document.getElementById("review-address").textContent = address + ", " + city + " " + zip;
+
+      updateSummary();
+      showScreen("screen-checkout-review");
+    }
+
+    function backToContact() {
+      showScreen("screen-checkout-contact");
+    }
+
+    /* ── Subscription Modal ────────────────────────────────────── */
+    function showSubscriptionModal() {
+      document.getElementById("subscription-modal").classList.remove("hidden");
+    }
+
+    function hideSubscriptionModal() {
+      document.getElementById("subscription-modal").classList.add("hidden");
+    }
+
+    function completeOrderWithSubscription() {
+      hideSubscriptionModal();
+      completeOrder(true);
+    }
+
+    function completeOrderWithoutSubscription() {
+      hideSubscriptionModal();
+      completeOrder(false);
+    }
+
+    /* ── Checkout: Review ──────────────────────────────────────── */
+    function completeOrder(withSubscription = false) {
+      const orderNumber = "TP" + Date.now().toString().slice(-8).toUpperCase();
+      hasSubscription = withSubscription;
+      
+      // If no subscription, charge full Ticketmaster price
+      const ticketmasterPrice = currentEvent.price;
+      const chargePrice = withSubscription ? currentEvent.price * 0.5 : ticketmasterPrice;
+      const fullPrice = currentEvent.price * selectedSeats.length;
+      const subtotal = chargePrice * selectedSeats.length;
+      const discount = fullPrice - subtotal; // ✅ FIX
+      const total = subtotal;
+
+      document.getElementById("conf-order-number").textContent = orderNumber;
+      document.getElementById("conf-event").textContent = currentEvent.name;
+      document.getElementById("conf-seats").textContent = selectedSeats.join(", ");
+      document.getElementById("conf-subtotal").textContent = "$" + fullPrice.toFixed(2);
+      if (withSubscription) {
+        document.getElementById("conf-discount").textContent = "-$" + discount.toFixed(2) + " (50% OFF)";
+      } else {
+        document.getElementById("conf-discount").textContent = "No discount applied";
+      }
+      document.getElementById("conf-total").textContent = "$" + total.toFixed(2);
+
+      showScreen("screen-confirmation");
+    }
+
+    /* ── Navigation ────────────────────────────────────────────── */
+    function backToBrowse() {
+      renderEvents();
+      showScreen("screen-browse");
+    }
+
+    /* ── Init ──────────────────────────────────────────────────── */
+    (function init() {
+      const user = getUser();
+      if (user) {
+        currentUser = user;
+        document.getElementById("user-display").textContent = "👤 " + user;
+        showHeader(true);
+        renderEvents();
+        showScreen("screen-browse");
+      } else {
+        showHeader(false);
+        showScreen("screen-login");
+      }
+    })();
+
+    /* ── Keyboard support ──────────────────────────────────────── */
+    document.getElementById("login-email").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") document.getElementById("login-password").focus();
+    });
+    document.getElementById("login-password").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") handleLogin();
+    });
+  </script>
+</body>
+</html>
