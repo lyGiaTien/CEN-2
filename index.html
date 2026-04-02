@@ -1238,7 +1238,6 @@
       </div>
     </div>
   </div>
-
   <!-- ════════════════════════════════════════════════════════════ -->
   <!-- JavaScript                                                   -->
   <!-- ════════════════════════════════════════════════════════════ -->
@@ -1421,9 +1420,9 @@
         : EVENTS.filter(e => e.category === category);
 
       filtered.forEach(evt => {
+        const discountedPrice = evt.price * (1 - evt.discount);
+        const discountPercent = Math.round(evt.discount * 100);
         const ticketmasterPrice = evt.price * 1.3; // Ticketmaster comparable price (30% higher)
-        const discountedPrice = evt.price * 0.5; // 50% discount
-        const savingsPercent = Math.round(((ticketmasterPrice - discountedPrice) / ticketmasterPrice) * 100);
 
         const card = document.createElement("div");
         card.className = "event-card";
@@ -1435,10 +1434,10 @@
             <div class="event-name">${evt.name}</div>
             <div class="event-venue">${evt.venue}</div>
             <div class="event-pricing">
-              <span class="price-original">$${ticketmasterPrice.toFixed(2)}</span>
+              <span class="price-original">$${evt.price}</span>
               <span class="price-discounted">$${discountedPrice.toFixed(2)}</span>
-              <span class="discount-badge">${savingsPercent}% OFF COMPARE TO TICKETMASTER</span>
-              <span class="discount-compare"></span>
+              <span class="discount-badge">${discountPercent}% OFF</span>
+              <span class="discount-compare">vs Ticketmaster: $${ticketmasterPrice.toFixed(2)}</span>
             </div>
             <button class="event-btn">Select Seats</button>
           </div>
